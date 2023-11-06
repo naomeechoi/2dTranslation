@@ -33,15 +33,15 @@ window.onload = function () {
 
   var positionLocation = gl.getAttribLocation(program, "a_position");
   var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+  var translationLocation = gl.getUniformLocation(program, "u_translation");
   var colorLocation = gl.getUniformLocation(program, "u_color");
 
   // create and bind buffer, and add buffer data, 버퍼 생성 바인드 및 데이터 구성
   var positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  setGeometry(gl);
 
   var translation = [0, 0];
-  var width = 100;
-  var height = 30;
   var color = [Math.random(), Math.random(), Math.random(), 1];
 
   //슬라이드 바 설정
@@ -83,8 +83,6 @@ window.onload = function () {
     gl.enableVertexAttribArray(positionLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-    setRectangle(gl, translation[0], translation[1], width, height);
-
     // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
     var size = 2; // 2 components per iteration
     var type = gl.FLOAT; // the data is 32bit floats
@@ -103,13 +101,16 @@ window.onload = function () {
     // set the resolution
     gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
 
+    // set the translation
+    gl.uniform2fv(translationLocation, translation);
+
     // set the color
     gl.uniform4fv(colorLocation, color);
 
     // Draw the rectangle.
     var primitiveType = gl.TRIANGLES;
     var offset = 0;
-    var count = 6;
+    var count = 6 * 3;
     gl.drawArrays(primitiveType, offset, count);
   }
 };
@@ -160,6 +161,23 @@ function setRectangle(gl, x, y, width, height) {
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]),
+    gl.STATIC_DRAW
+  );
+}
+
+function setGeometry(gl) {
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      // left column
+      0, 0, 30, 0, 0, 150, 0, 150, 30, 0, 30, 150,
+
+      // right column
+      50, 0, 80, 0, 50, 150, 50, 150, 80, 0, 80, 150,
+
+      // middle
+      0, 0, 30, 0, 80, 150, 80, 150, 50, 150, 0, 0,
+    ]),
     gl.STATIC_DRAW
   );
 }
