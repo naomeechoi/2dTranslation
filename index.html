@@ -5,16 +5,23 @@
   </head>
   <body>
     <canvas id="game-surface"> Your browser does not support HTML5 </canvas>
-    <div id="slidecontainer"></div>
+    <div id="ui">
+      <div id="slidecontainer"></div>
+      <div id="rotation"></div>
+    </div>
     <script id="vertex-shader-2d" type="notjs">
       attribute vec2 a_position;
 
       uniform vec2 u_resolution;
       uniform vec2 u_translation;
+      uniform vec2 u_rotation;
 
       void main() {
-         // convert the rectangle points from pixels to 0.0 to 1.0
-         vec2 position = a_position + u_translation;
+        vec2 rotatedPosition = vec2(
+          a_position.x * u_rotation.y + a_position.y * u_rotation.x,
+          a_position.y * u_rotation.y - a_position.x * u_rotation.x);
+
+         vec2 position = rotatedPosition + u_translation;
          vec2 zeroToOne = position / u_resolution;
 
          // convert from 0->1 to 0->2
@@ -36,5 +43,10 @@
       }
     </script>
     <script src="app.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/jquery-1.7.1.min.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/jquery-ui-1.8.16.custom.min.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/jquery.mousecapture.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/jquery.gman.ui.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/jquery-gman-circle.js"></script>
   </body>
 </html>

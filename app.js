@@ -34,6 +34,7 @@ window.onload = function () {
   var positionLocation = gl.getAttribLocation(program, "a_position");
   var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   var translationLocation = gl.getUniformLocation(program, "u_translation");
+  var rotationLocation = gl.getUniformLocation(program, "u_rotation");
   var colorLocation = gl.getUniformLocation(program, "u_color");
 
   // create and bind buffer, and add buffer data, 버퍼 생성 바인드 및 데이터 구성
@@ -42,6 +43,7 @@ window.onload = function () {
   setGeometry(gl);
 
   var translation = [0, 0];
+  var rotation = [0, 1];
   var color = [Math.random(), Math.random(), Math.random(), 1];
 
   //슬라이드 바 설정
@@ -72,6 +74,17 @@ window.onload = function () {
     };
   }
 
+  //회전 설정
+  $("#rotation").gmanUnitCircle({
+    width: 200,
+    height: 200,
+    value: 0,
+    slide: function (e, u) {
+      rotation[0] = u.x;
+      rotation[1] = u.y;
+      drawScene();
+    },
+  });
   drawScene();
 
   function drawScene() {
@@ -103,6 +116,9 @@ window.onload = function () {
 
     // set the translation
     gl.uniform2fv(translationLocation, translation);
+
+    // set the rotation
+    gl.uniform2fv(rotationLocation, rotation);
 
     // set the color
     gl.uniform4fv(colorLocation, color);
