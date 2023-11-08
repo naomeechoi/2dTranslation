@@ -35,6 +35,7 @@ window.onload = function () {
   var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   var translationLocation = gl.getUniformLocation(program, "u_translation");
   var rotationLocation = gl.getUniformLocation(program, "u_rotation");
+  var scaleLocation = gl.getUniformLocation(program, "u_scale");
   var colorLocation = gl.getUniformLocation(program, "u_color");
 
   // create and bind buffer, and add buffer data, 버퍼 생성 바인드 및 데이터 구성
@@ -44,47 +45,82 @@ window.onload = function () {
 
   var translation = [0, 0];
   var rotation = [0, 1];
+  var scale = [1, 1];
   var color = [Math.random(), Math.random(), Math.random(), 1];
 
-  //슬라이드 바 설정
-  var sliderContainer = document.getElementById("slidecontainer");
-  for (var i = 0; i < 2; i++) {
+  // 위치 슬라이드바 설정
+  function updatePosition(ele, index) {
+    translation[index] = ele.target.value;
+    ele.target.previousSibling.innerHTML =
+      ele.target.previousSibling.getAttribute("name") + ele.target.value;
+    drawScene();
+  }
+
+  makeSliderAndRedraw("translation X: ", "translationSlider", 0, 400, (ele) => {
+    return updatePosition(ele, 0);
+  });
+
+  makeSliderAndRedraw("translation Y: ", "translationSlider", 0, 400, (ele) => {
+    return updatePosition(ele, 1);
+  });
+
+  // 회전 슬라이드 x 바 설정
+  function updateAngle(ele) {
+    var angleInDegrees = 360 - ele.target.value;
+    var angleInRadians = (angleInDegrees * Math.PI) / 180;
+    rotation[0] = Math.sin(angleInRadians);
+    rotation[1] = Math.cos(angleInRadians);
+
+    ele.target.previousSibling.innerHTML =
+      ele.target.previousSibling.getAttribute("name") + ele.target.value;
+    drawScene();
+  }
+
+  makeSliderAndRedraw("rotation Angle: ", "rotationSlider", 0, 360, (ele) => {
+    return updateAngle(ele);
+  });
+
+  // 스케일 슬라이드 x 바 설정
+  function updateScale(ele, index) {
+    scale[index] = ele.target.value;
+
+    ele.target.previousSibling.innerHTML =
+      ele.target.previousSibling.getAttribute("name") + ele.target.value;
+    drawScene();
+  }
+
+  makeSliderAndRedraw("scale X: ", "scaleSlider", -5, 5, (ele) => {
+    return updateScale(ele, 0);
+  });
+
+  makeSliderAndRedraw("scale Y: ", "scaleSlider", -5, 5, (ele) => {
+    return updateScale(ele, 1);
+  });
+
+  function makeSliderAndRedraw(eleName, parentDivId, min, max, func) {
+    var parentDiv = document.getElementById(parentDivId);
+
     var division = document.createElement("d");
 
     var tempSlider = document.createElement("input");
     tempSlider.className = "slider";
     tempSlider.type = "range";
-    tempSlider.min = 0;
-    tempSlider.max = maxWidthHeight - 100;
-    tempSlider.id = i;
+    tempSlider.min = min;
+    tempSlider.max = max;
 
     var text = document.createElement("p");
-    text.id = text;
-    text.innerHTML = tempSlider.value;
+    text.setAttribute("name", eleName);
+    text.innerHTML = eleName + tempSlider.value;
 
     division.appendChild(text);
     division.appendChild(tempSlider);
-    sliderContainer.appendChild(division);
+    parentDiv.appendChild(division);
 
     tempSlider.oninput = function (ele) {
-      ele.target.previousSibling.innerHTML = ele.target.value;
-
-      translation[ele.target.id] = ele.target.previousSibling.innerHTML;
-      drawScene();
+      func(ele);
     };
   }
 
-  //회전 설정
-  $("#rotation").gmanUnitCircle({
-    width: 200,
-    height: 200,
-    value: 0,
-    slide: function (e, u) {
-      rotation[0] = u.x;
-      rotation[1] = u.y;
-      drawScene();
-    },
-  });
   drawScene();
 
   function drawScene() {
@@ -119,6 +155,9 @@ window.onload = function () {
 
     // set the rotation
     gl.uniform2fv(rotationLocation, rotation);
+
+    // set the rotation
+    gl.uniform2fv(scaleLocation, scale);
 
     // set the color
     gl.uniform4fv(colorLocation, color);
