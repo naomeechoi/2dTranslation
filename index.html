@@ -6,6 +6,8 @@
   <body>
     <canvas id="game-surface"> Your browser does not support HTML5 </canvas>
     <div id="ui">
+      <div id="cameraAngleSlider"></div>
+      <div id="perspectiveSlider"></div>
       <div id="translationSlider"></div>
       <div id="rotationSlider"></div>
       <div id="scaleSlider"></div>
@@ -19,7 +21,8 @@
       varying vec4 v_color;
 
       void main() {
-         gl_Position = u_matrix * a_position;
+        gl_Position = u_matrix * a_position;
+
          v_color = a_color;
       }
     </script>

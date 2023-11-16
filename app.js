@@ -47,7 +47,19 @@ window.onload = function () {
   var translation = [1, 1, 1];
   var rotation = [1, 1, 1];
   var scale = [1, 1, 1];
-  var color = [Math.random(), Math.random(), Math.random(), 1];
+  var fieldOfViewRadians = degreesToRadians(1);
+
+  // 위치 슬라이드바 설정
+  function updatePerspective(ele) {
+    fieldOfViewRadians = degreesToRadians(ele.target.value);
+    ele.target.previousSibling.innerHTML =
+      ele.target.previousSibling.getAttribute("name") + ele.target.value;
+    drawScene();
+  }
+
+  makeSliderAndRedraw("perspectiveAngle: ", "perspectiveSlider", 1, 360, (ele) => {
+    return updatePerspective(ele);
+  });
 
   // 위치 슬라이드바 설정
   function updatePosition(ele, index) {
@@ -57,15 +69,15 @@ window.onload = function () {
     drawScene();
   }
 
-  makeSliderAndRedraw("translation X: ", "translationSlider", 0, 400, (ele) => {
+  makeSliderAndRedraw("translation X: ", "translationSlider", -200, 200, (ele) => {
     return updatePosition(ele, 0);
   });
 
-  makeSliderAndRedraw("translation Y: ", "translationSlider", 0, 400, (ele) => {
+  makeSliderAndRedraw("translation Y: ", "translationSlider", -200, 200, (ele) => {
     return updatePosition(ele, 1);
   });
 
-  makeSliderAndRedraw("translation Z: ", "translationSlider", 0, 400, (ele) => {
+  makeSliderAndRedraw("translation Z: ", "translationSlider", -1000, 1, (ele) => {
     return updatePosition(ele, 2);
   });
 
@@ -123,6 +135,7 @@ window.onload = function () {
     tempSlider.type = "range";
     tempSlider.min = min;
     tempSlider.max = max;
+    tempSlider.step = 0.01;
     tempSlider.value = 1;
 
     var text = document.createElement("p");
@@ -178,7 +191,11 @@ window.onload = function () {
       colorLocation, colorSize, colorType, colorNormalize, colorStride, colorOffset);
 
     // Compute the matrices
-    var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 400);
+    var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    var zNear = 1;
+    var zFar = 2000;
+    var matrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
+    console.log(matrix);
     matrix = m4.translate(matrix, translation[0], translation[1], translation[2]);
     matrix = m4.xRotate(matrix, rotation[0]);
     matrix = m4.yRotate(matrix, rotation[1]);
@@ -584,6 +601,18 @@ var m4 = {
     ];
   },
 
+  perspective: function(fieldOfViewInRadians, aspect, near, far) {
+    var f = 1 / Math.tan(0.5 * fieldOfViewInRadians);
+    var rangeInv = 1.0 / (near - far);
+
+    return [
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (near + far) * rangeInv, -1,
+      0, 0, near * far * rangeInv * 2, 0
+    ];
+  },
+
   multiply: function(a, b) {
     var a00 = a[0 * 4 + 0];
     var a01 = a[0 * 4 + 1];
@@ -687,6 +716,15 @@ var m4 = {
       sx, 0,  0,  0,
       0, sy,  0,  0,
       0,  0, sz,  0,
+      0,  0,  0,  1,
+    ];
+  },
+
+  makeZToMatrix: function(fudgeFactor){
+    return [
+      1, 0,  0,  0,
+      0, 1,  0,  0,
+      0,  0, 1,  fudgeFactor,
       0,  0,  0,  1,
     ];
   },
